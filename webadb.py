@@ -50,6 +50,13 @@ HTML = """
           <form action='/enable-usb' method='post' class='d-inline'>
             <button class='btn btn-secondary mb-1'><i class='fa-solid fa-usb'></i> Aktifkan ADB USB</button>
           </form>
+          <!-- Tombol Hotspot -->
+          <form action='/hotspot-on' method='post' class='d-inline'>
+            <button class='btn btn-outline-success mb-1'><i class='fa-solid fa-broadcast-tower'></i> Aktifkan Hotspot</button>
+          </form>
+          <form action='/hotspot-off' method='post' class='d-inline'>
+            <button class='btn btn-outline-warning mb-1'><i class='fa-solid fa-broadcast-tower'></i> Nonaktifkan Hotspot</button>
+          </form>
           <button class='btn btn-outline-danger mb-1' id='btn-restart-webadb'><i class='fa-solid fa-arrows-rotate'></i> Restart WebADB</button>
           <button class='btn btn-outline-info mb-1' id='btn-status-webadb'><i class='fa-solid fa-circle-info'></i> Status WebADB</button>
         </div>
@@ -277,6 +284,23 @@ def enable_usb():
     out = subprocess.getoutput("adb usb")
     result = f"ADB USB Mode Diaktifkan\n\n{out}"
     write_log("Aktifkan ADB USB", result)
+    return render_template_string(HTML, output=result)
+
+@app.route("/hotspot-on", methods=["POST"])
+def hotspot_on():
+    # Perintah ADB untuk mengaktifkan hotspot (umum, bisa berbeda tiap device)
+    # Biasanya: svc wifi disable && svc wifi enable && svc tether start
+    out = subprocess.getoutput("adb shell svc wifi disable && adb shell svc wifi enable && adb shell svc tether start")
+    result = f"Hotspot WiFi diaktifkan.\n\n{out}"
+    write_log("Aktifkan Hotspot WiFi", result)
+    return render_template_string(HTML, output=result)
+
+@app.route("/hotspot-off", methods=["POST"])
+def hotspot_off():
+    # Perintah ADB untuk menonaktifkan hotspot
+    out = subprocess.getoutput("adb shell svc tether stop")
+    result = f"Hotspot WiFi dinonaktifkan.\n\n{out}"
+    write_log("Nonaktifkan Hotspot WiFi", result)
     return render_template_string(HTML, output=result)
 
 @app.route("/restart-webadb", methods=["POST"])
