@@ -255,8 +255,20 @@ def status():
 
 @app.route("/disable-wifi", methods=["POST"])
 def disable_wifi():
-    out = subprocess.getoutput("adb usb")
-    result = f"Nonaktifkan ADB Wi-Fi → USB mode aktif\n\n{out}"
+    devices = get_connected_devices()
+    results = []
+    if not devices:
+        result = "Tidak ada device terhubung."
+    else:
+        for dev in devices:
+            # Hanya jalankan untuk device yang terhubung via WiFi (ada ':')
+            if ':' in dev:
+                out = subprocess.getoutput(f"adb -s {dev} usb")
+                results.append(f"{dev}: {out}")
+        if results:
+            result = "Nonaktifkan ADB Wi-Fi → USB mode aktif\n\n" + "\n".join(results)
+        else:
+            result = "Tidak ada device WiFi yang perlu dinonaktifkan."
     write_log("Nonaktifkan ADB Wi-Fi", result)
     return render_template_string(HTML, output=result)
 
